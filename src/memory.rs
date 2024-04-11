@@ -1,6 +1,7 @@
 use std::fmt::{Display, Formatter};
 use crate::identifier::Identifier;
 
+#[derive(Debug, Clone, PartialEq)]
 pub enum Address {
     StackAddress(usize, Identifier),
     HeapAddress(usize),

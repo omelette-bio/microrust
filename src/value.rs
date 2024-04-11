@@ -5,6 +5,7 @@ pub enum Value {
     Integer(isize),
     Boolean(bool),
     Unit,
+    Pointer(Address),
 }
 
 impl fmt::Display for Value {
@@ -14,11 +15,13 @@ impl fmt::Display for Value {
             Value::Integer(i) => write!(f, "{}", i),
             Value::Boolean(b) => write!(f, "{}", b),
             Value::Unit => write!(f, "()"),
+            Value::Pointer(p) => write!(f, "{}", p)
         }
     }
 }
 
 use crate::{parsing::parsedvalue::ParsedValue, r#type::Type};
+use crate::memory::Address;
 
 impl From<ParsedValue> for Value {
     fn from(pv: ParsedValue) -> Self {
@@ -36,6 +39,7 @@ impl From<&Value> for Type {
             Value::Integer(_) => Type::Int,
             Value::Boolean(_) => Type::Bool,
             Value::Unit => Type::Unit,
+            Value::Pointer(_) => Type::Pointer
         }
     }
 }

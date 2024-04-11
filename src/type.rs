@@ -3,6 +3,7 @@ pub enum Type {
     Int,
     Bool,
     Unit,
+    Pointer,
 }
 
 use std::fmt::{self, Display};
@@ -14,6 +15,7 @@ impl Display for Type {
             Int => write!(f, "isize"),
             Bool => write!(f, "bool"),
             Unit => write!(f, "unit"),
+            Pointer => write!(f, "pointer")
         }
     }
 }

@@ -44,7 +44,7 @@ impl NameSpaceStack {
         Err(EvalError::Undefined(id.clone()))
     }
 
-    fn get_address(&self, id: &Identifier) -> Result<Address, EvalError> {
+    pub fn get_address(&self, id: &Identifier) -> Result<Address, EvalError> {
         // renvoie l'adresse de pile d'un identifiant (cf opérateur `&x`)
 
         for index in  (0..self.stack.len()).rev() {

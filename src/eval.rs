@@ -1,3 +1,4 @@
+use std::any::Any;
 use crate::identifier::Identifier;
 use crate::parsing::expression::Expression;
 use crate::parsing::instruction::Instruction;
@@ -5,6 +6,7 @@ use crate::value::Value;
 use Expression::*;
 use crate::parsing::binop::Binop;
 use crate::error::EvalError;
+use crate::memory::Address;
 use crate::namespace::NameSpace;
 use crate::namespacestack::NameSpaceStack;
 use crate::r#type::Type;
@@ -22,7 +24,6 @@ impl Expression {
     }
 
     pub fn eval(&self, nss: &mut NameSpaceStack) -> Result<Value, EvalError> {
-
         match self {
             Const(v) => Ok(Value::from(*v)),
             Expression::Identifier(id) => Ok(nss.find(id)?),
@@ -35,7 +36,16 @@ impl Expression {
             Conditional{cond, cond_true, cond_false} => todo!(),
             NewPtr => todo!(),
             Deref(_) => todo!(),
-            AmpersAnd(_) => todo!(),
+            AmpersAnd(p) => Ok(Value::Pointer(p.eval_to_address(nss)?)),
+            _ => todo!()
+        }
+    }
+
+    fn eval_to_address(&self, nss: &mut NameSpaceStack) -> Result<Address, EvalError> {
+        match self {
+            Expression::NewPtr => todo!(),
+            Expression::Deref(_) => todo!(),
+            Expression::Identifier(i) => nss.get_address(i),
             _ => todo!()
         }
     }

@@ -47,7 +47,7 @@ impl NameSpace {
 
     /// returns true if the namespace has an identifier
     pub fn contains(&self, id: &Identifier) -> bool {
-        self.contains_key(id)
+        self.0.contains_key(id)
     }
 }
 
