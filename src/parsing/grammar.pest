@@ -1,0 +1,100 @@
+// see https://pest.rs/book/ and https://pest.rs/book/examples/calculator.html
+
+integer = @{ ASCII_DIGIT+ }
+
+// WHITE SPACES
+WHITESPACE = _{ " " }
+
+// KEYWORDS
+LET = _{ "let" }
+MUT = _{ "mut" }
+IF = _{ "if" }
+ELSE = _{ "else" }
+WHILE = _{ "while" }
+TRUE = _{ "true" }
+FALSE = _{ "false" }
+PTR = { "Ptr" }
+NEW = _{ "new" }
+FREE = _{ "free" }
+keyword = { LET | MUT | IF | ELSE | WHILE | TRUE | FALSE | PTR | NEW | FREE }
+
+// BOOLEAN
+boolean = { TRUE | FALSE }
+
+// IDENTIFIERS
+identifier = @{ !keyword ~ ASCII_ALPHA ~ ASCII_ALPHANUMERIC* }
+
+// OPERATORS
+ADD = { "+" }
+SUBTRACT = { "-" }
+MULTIPLY = { "*" }
+DIVIDE = { "/" }
+MODULO = { "%" }
+EQQUALS = @{ "==" }
+NEQ = @{ "!=" }
+EQUALS = _{ "=" }
+LEQ = @{ "<=" }
+GEQ = @{ ">=" }
+LOWER = { "<" }
+GREATER = { ">" }
+AND = { "&&" }
+OR = { "||" }
+bin_op = _{ ADD | SUBTRACT | MULTIPLY | DIVIDE | MODULO | EQQUALS | NEQ | LEQ | GEQ | LOWER | GREATER | AND | OR }
+
+// DELIMITERS
+LPAR = _{ "(" }
+RPAR = _{ ")" }
+LCURL = _{ "{" }
+RCURL = _{ "}" }
+SEMICOLON = _{ ";" }
+COLON = _{ ":" }
+QUESTIONMARK = _{ "?" }
+
+// EXPRESSIONS
+atom = _{ 
+  integer
+| boolean
+| unit
+| ptrnew
+| conditional_expr
+| identifier
+| deref 
+| ampersand
+| TRUE 
+| FALSE 
+| LPAR ~ expr ~ RPAR 
+}
+unit = { "()" }
+deref = { "*" ~ atom }
+ampersand = { "&" ~ atom }
+ptrnew = {  PTR ~ "::" ~ NEW ~ LPAR ~ RPAR}
+conditional_expr = { LPAR ~ expr ~ RPAR ~ QUESTIONMARK ~ expr ~ COLON ~ expr }
+expr = { atom ~ (bin_op ~ atom)* }
+
+
+
+// INSTRUCTIONS
+let_equals = { LET ~ identifier ~ EQUALS ~ expr }
+let_mut_equals = { LET ~ MUT ~ identifier ~ EQUALS ~ expr}
+while_instr = { WHILE ~ expr ~ instrs}
+if_instr = {IF ~ expr ~ instrs ~ ELSE ~ instrs}
+write_at = {expr ~ EQUALS ~ expr }
+instrs = { empty_block | non_empty_block }
+empty_block = { LCURL ~ RCURL }
+non_empty_block = { LCURL ~ instr ~ (SEMICOLON ~ instr)* ~ RCURL }
+free_instr = { FREE ~ LPAR ~ expr ~ RPAR }
+instr = { 
+| let_equals 
+| let_mut_equals
+| instrs 
+| if_instr 
+| while_instr
+| write_at
+| expr // leave after write_at
+| free_instr
+}
+
+start_rule_instr = _{ SOI ~ instr ~ EOI }
+start_rule_expr = _{ SOI ~ expr ~ EOI }
+start_rule_binop = _{ SOI ~ bin_op ~ EOI }
+
