@@ -1,5 +1,7 @@
 use std::fmt::{Display, Formatter};
 use crate::identifier::Identifier;
+use crate::namespacestack::NameSpaceStack;
+use crate::heap::Heap;
 
 #[derive(Debug, Clone, PartialEq)]
 pub enum Address {
@@ -14,4 +16,13 @@ impl Display for Address {
             Address::HeapAddress(num) => write!(f, "@[{}]", num),
         }
     }
+}
+
+pub struct Memory {
+    stack: NameSpaceStack,
+    heap: Heap,
+}
+
+impl Memory {
+    pub fn new() -> Self { Memory { stack: NameSpaceStack::new(), heap: Heap::new() } }
 }

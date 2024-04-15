@@ -2,27 +2,63 @@ use crate::error::EvalError;
 use crate::value::Value;
 
 #[derive(Debug)]
-pub struct MemoryCell {
+pub enum MemoryCell {
+    NotAllocated,
+    AllocatedCell(AllocatedCell)
+}
+
+#[derive(Debug)]
+pub struct AllocatedCell {
     mutable: bool,
-    value: Value,
+    value: Option<Value>,
 }
 
 impl MemoryCell {
-    pub fn new(mutable: bool, value: Value) -> Self { MemoryCell { mutable, value } }
-    pub fn is_mutable(&self) -> bool { self.mutable }
-    pub fn get_value(&self) -> Result<Value, EvalError> {
-        match &self.value {
-            Value::Unit => Ok(Value::Unit),
-            Value::Boolean(b) => Ok(Value::Boolean(*b)),
-            Value::Integer(i) => Ok(Value::Integer(*i)),
-            Value::Pointer(a) => Ok(Value::Pointer(a.clone()))
+
+    /// a modifier
+    // pub fn new() -> Self { MemoryCell::NotAllocated }
+
+    pub fn new_uninitialized() -> Self {
+        MemoryCell::AllocatedCell( AllocatedCell { mutable: true, value: None } )
+    }
+
+    pub fn is_mutable(&self) -> bool {
+        match self {
+            MemoryCell::NotAllocated => false,
+            MemoryCell::AllocatedCell(ac) => ac.mutable
         }
     }
-    pub fn set_value(&mut self, v: Value) -> Result<(), EvalError> {
-        if !self.is_mutable() {
-            return Err(EvalError::NotMutable(None))
+
+    pub fn get_value(&self) -> Result<Value, EvalError> {
+        match self {
+            MemoryCell::NotAllocated => Err(EvalError::NonAllocatedCell(None)),
+            MemoryCell::AllocatedCell(ac) =>
+                match &ac.value {
+                    None => todo!(),
+                    Some(Value::Unit) => Ok(Value::Unit),
+                    Some(Value::Integer(i)) => Ok(Value::Integer(*i)),
+                    Some(Value::Boolean(b)) => Ok(Value::Boolean(*b)),
+                    Some(Value::Pointer(a)) => Ok(Value::Pointer(a.clone()))
+                }
         }
-        self.value = v;
-        Ok(())
+    }
+
+    pub fn set_value(&mut self, v: Value) -> Result<(), EvalError> {
+        match self {
+            MemoryCell::NotAllocated => Err(EvalError::NonAllocatedCell(None)),
+            MemoryCell::AllocatedCell(ac) => {
+                if !ac.is_mutable() { return Err(EvalError::NotMutable(None)) }
+                ac.value = v;
+                Ok(())
+            }
+        }
+    }
+
+    pub fn is_allocated(&self) -> bool {
+        match self {
+            MemoryCell::NotAllocated => false,
+            MemoryCell::AllocatedCell(_) => true
+        }
     }
 }
+

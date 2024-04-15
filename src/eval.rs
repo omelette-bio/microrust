@@ -1,4 +1,4 @@
-use std::any::Any;
+// use std::any::Any;
 use crate::identifier::Identifier;
 use crate::parsing::expression::Expression;
 use crate::parsing::instruction::Instruction;
@@ -6,7 +6,7 @@ use crate::value::Value;
 use Expression::*;
 use crate::parsing::binop::Binop;
 use crate::error::EvalError;
-use crate::memory::Address;
+use crate::memory::{ Address, Memory };
 use crate::namespace::NameSpace;
 use crate::namespacestack::NameSpaceStack;
 use crate::r#type::Type;
@@ -14,7 +14,7 @@ use crate::r#type::Type;
 
 impl Expression {
 
-    fn eval_and_cast_to_int(&self, nss: &mut NameSpaceStack) -> Result<isize, EvalError> {
+    fn eval_and_cast_to_int(&self, nss: &mut Memory) -> Result<isize, EvalError> {
         let v = self.eval(nss)?;
         v.to_int()
          .map_err(|_| EvalError::TypeMismatch{
@@ -23,7 +23,7 @@ impl Expression {
             found: Some(Type::from(&v))})
     }
 
-    pub fn eval(&self, nss: &mut NameSpaceStack) -> Result<Value, EvalError> {
+    pub fn eval(&self, nss: &mut Memory) -> Result<Value, EvalError> {
         match self {
             Const(v) => Ok(Value::from(*v)),
             Expression::Identifier(id) => Ok(nss.find(id)?),
@@ -34,14 +34,14 @@ impl Expression {
             },
             BinOp(_,_,_) => todo!(),
             Conditional{cond, cond_true, cond_false} => todo!(),
-            NewPtr => todo!(),
+            NewPtr => Ok(Value::Pointer(Expression::NewPtr.eval_to_address(nss)?)),
             Deref(_) => todo!(),
             AmpersAnd(p) => Ok(Value::Pointer(p.eval_to_address(nss)?)),
             _ => todo!()
         }
     }
 
-    fn eval_to_address(&self, nss: &mut NameSpaceStack) -> Result<Address, EvalError> {
+    fn eval_to_address(&self, nss: &mut Memory) -> Result<Address, EvalError> {
         match self {
             Expression::NewPtr => todo!(),
             Expression::Deref(_) => todo!(),
@@ -53,7 +53,7 @@ impl Expression {
 
 
 impl Instruction {
-    pub fn exec(&self, nss: &mut NameSpaceStack) -> Result<(Option<Identifier>, Value), EvalError> {
+    pub fn exec(&self, nss: &mut Memory) -> Result<(Option<Identifier>, Value), EvalError> {
         match self {
             Instruction::Let{id, mutable, expr} => {
                 let v_temp = expr.eval(nss)?;

@@ -10,6 +10,7 @@ mod eval;
 mod r#type;
 mod memorycell;
 mod memory;
+mod heap;
 
 
 // LISTE DES IMPORTS
@@ -20,7 +21,6 @@ use namespace::NameSpace;
 use namespacestack::NameSpaceStack;
 use value::Value;
 use crate::parser::Parse;
-use parsing::expression;
 use crate::error::Error;
 use crate::r#type::Type;
 
