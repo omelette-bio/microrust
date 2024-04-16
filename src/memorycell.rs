@@ -18,6 +18,10 @@ impl MemoryCell {
     /// a modifier
     // pub fn new() -> Self { MemoryCell::NotAllocated }
 
+    pub fn new_initialized(mutable: bool, value: Value) -> Self {
+        MemoryCell::AllocatedCell( AllocatedCell { mutable, value: Some(value) } )
+    }
+
     pub fn new_uninitialized() -> Self {
         MemoryCell::AllocatedCell( AllocatedCell { mutable: true, value: None } )
     }
@@ -25,7 +29,7 @@ impl MemoryCell {
     pub fn is_mutable(&self) -> bool {
         match self {
             MemoryCell::NotAllocated => false,
-            MemoryCell::AllocatedCell(ac) => ac.mutable
+            MemoryCell::AllocatedCell(ac) => ac.is_mutable()
         }
     }
 
@@ -48,7 +52,7 @@ impl MemoryCell {
             MemoryCell::NotAllocated => Err(EvalError::NonAllocatedCell(None)),
             MemoryCell::AllocatedCell(ac) => {
                 if !ac.is_mutable() { return Err(EvalError::NotMutable(None)) }
-                ac.value = v;
+                ac.value = Some(v);
                 Ok(())
             }
         }
@@ -62,3 +66,6 @@ impl MemoryCell {
     }
 }
 
+impl AllocatedCell {
+    pub fn is_mutable(&self) -> bool { self.mutable }
+}

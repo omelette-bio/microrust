@@ -57,7 +57,7 @@ impl NameSpaceStack {
     }
 }
 
-/* 
+/*
 #[cfg(test)]
 mod test_namespace_stack {
     use super::*;

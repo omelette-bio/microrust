@@ -22,6 +22,7 @@ use namespacestack::NameSpaceStack;
 use value::Value;
 use crate::parser::Parse;
 use crate::error::Error;
+use crate::memory::Memory;
 use crate::r#type::Type;
 
 // AFFICHAGE DU PROMPT
@@ -38,7 +39,7 @@ fn prompt() {
 //     }
 // }
 
-fn parse_exec(input: &str, nss: &mut NameSpaceStack) -> Result<(Option<Identifier>, Value), Error> {
+fn parse_exec(input: &str, nss: &mut Memory) -> Result<(Option<Identifier>, Value), Error> {
     match Instruction::parse(input) {
         Ok(instr) => {
             instr.exec(nss).map_err(|err| Error::EvalError(err))
@@ -50,7 +51,7 @@ fn parse_exec(input: &str, nss: &mut NameSpaceStack) -> Result<(Option<Identifie
 // FONCTION PRINCIPALE
 fn main(){
     prompt();
-    let mut nss = NameSpaceStack::new();
+    let mut nss = Memory::new();
     nss.push(NameSpace::new());
     let stdin = io::stdin().lock();
     for line in stdin.lines() {

@@ -17,7 +17,7 @@ impl NameSpace {
         if self.0.contains_key(&id) {
             Err(EvalError::AlreadyDefined(id.clone()))
         } else {
-            self.0.insert(id.clone(), MemoryCell::new(mutable, value));
+            self.0.insert(id.clone(), MemoryCell::new_initialized(mutable, value));
             Ok(())
         }
     }
