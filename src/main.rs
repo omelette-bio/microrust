@@ -18,7 +18,6 @@ use std::io::{self, BufRead, Write};
 use identifier::Identifier;
 use parsing::instruction::Instruction;
 use namespace::NameSpace;
-use namespacestack::NameSpaceStack;
 use value::Value;
 use crate::parser::Parse;
 use crate::error::Error;

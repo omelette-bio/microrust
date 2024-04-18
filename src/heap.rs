@@ -1,7 +1,9 @@
 use crate::memory::Address;
 use crate::memorycell::MemoryCell;
 
+#[derive(Debug)]
 pub struct Heap(Vec<MemoryCell>);
+
 impl Heap {
     pub fn new() -> Self { Heap( Vec::new() ) }
 
@@ -19,4 +21,6 @@ impl Heap {
         self.0.push(MemoryCell::new_uninitialized());
         return Address::HeapAddress(self.0.len() - 1);
     }
+
+    pub fn free(&mut self, a: usize) { self.0[a] = MemoryCell::NotAllocated }
 }

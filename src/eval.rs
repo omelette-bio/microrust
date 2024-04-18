@@ -8,7 +8,6 @@ use crate::parsing::binop::Binop;
 use crate::error::EvalError;
 use crate::memory::{ Address, Memory };
 use crate::namespace::NameSpace;
-use crate::namespacestack::NameSpaceStack;
 use crate::r#type::Type;
 
 
@@ -44,7 +43,6 @@ impl Expression {
     fn eval_to_address(&self, nss: &mut Memory) -> Result<Address, EvalError> {
         match self {
             Expression::NewPtr => Ok(nss.malloc()),
-            Expression::Deref(_) => todo!(),
             Expression::Identifier(i) => nss.get_address(i),
             _ => todo!()
         }
@@ -76,7 +74,11 @@ impl Instruction {
             Instruction::IfElse { cond, cond_true, cond_false } => todo!(),
             Instruction::While(e, instr) => todo!(),
             Instruction::WriteAt(e1, e2) => todo!(),
-            Instruction::Free(e) => todo!(),
+            Instruction::Free(e) => {
+                let id_val = e.eval(nss)?;
+                nss.free(&id_val)?;
+                Ok((None, Value::Unit))
+            },
         }
     }
 }

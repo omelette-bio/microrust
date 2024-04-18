@@ -1,5 +1,6 @@
 use crate::{error::EvalError, identifier::Identifier, namespace::NameSpace, value::Value, memory::Address};
 
+#[derive(Debug)]
 pub struct NameSpaceStack {
     stack: Vec<NameSpace>,
 }

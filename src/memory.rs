@@ -21,6 +21,7 @@ impl Display for Address {
     }
 }
 
+#[derive(Debug)]
 pub struct Memory {
     stack: NameSpaceStack,
     heap: Heap,
@@ -40,4 +41,14 @@ impl Memory {
     pub fn find(&self, id: &Identifier) -> Result<Value, EvalError> { self.stack.find(id) }
 
     pub fn malloc(&mut self) -> Address { self.heap.malloc() }
+
+    pub fn free(&mut self, add: &Value) -> Result<Value, EvalError>{
+        match add {
+            Value::Pointer(Address::HeapAddress(n)) => {
+                self.heap.free(*n);
+                Ok(Value::Unit)
+            },
+            _ => todo!()
+        }
+    }
 }
