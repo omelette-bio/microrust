@@ -16,7 +16,7 @@ impl Display for Address {
     fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
         match self {
             Address::StackAddress(num, var) => write!(f, "@[{},{}]", num, var),
-            Address::HeapAddress(num) => write!(f, "@[{}]", num),
+            Address::HeapAddress(num) => write!(f, "@{}", num),
         }
     }
 }
@@ -38,4 +38,6 @@ impl Memory {
     pub fn get_address(&self, id: &Identifier) -> Result<Address, EvalError> { self.stack.get_address(id) }
 
     pub fn find(&self, id: &Identifier) -> Result<Value, EvalError> { self.stack.find(id) }
+
+    pub fn malloc(&mut self) -> Address { self.heap.malloc() }
 }

@@ -6,7 +6,7 @@ impl Heap {
     pub fn new() -> Self { Heap( Vec::new() ) }
 
     /// fonction prise du cours
-    fn malloc(&mut self) -> Address {
+    pub fn malloc(&mut self) -> Address {
         // un allocateur qui essaie d'utiliser un emplacement pris par une cellule
         // non allouée, sinon augmente la taille du tas (pour simplifier, le tas est "infini")
 

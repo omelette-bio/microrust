@@ -43,7 +43,7 @@ impl Expression {
 
     fn eval_to_address(&self, nss: &mut Memory) -> Result<Address, EvalError> {
         match self {
-            Expression::NewPtr => todo!(),
+            Expression::NewPtr => Ok(nss.malloc()),
             Expression::Deref(_) => todo!(),
             Expression::Identifier(i) => nss.get_address(i),
             _ => todo!()
