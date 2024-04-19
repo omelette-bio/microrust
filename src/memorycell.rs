@@ -38,7 +38,7 @@ impl MemoryCell {
             MemoryCell::NotAllocated => Err(EvalError::NonAllocatedCell(None)),
             MemoryCell::AllocatedCell(ac) =>
                 match &ac.value {
-                    None => todo!(),
+                    None => Err(EvalError::NonInitializedValue(None)),
                     Some(Value::Unit) => Ok(Value::Unit),
                     Some(Value::Integer(i)) => Ok(Value::Integer(*i)),
                     Some(Value::Boolean(b)) => Ok(Value::Boolean(*b)),

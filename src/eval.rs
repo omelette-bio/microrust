@@ -34,7 +34,15 @@ impl Expression {
             BinOp(_,_,_) => todo!(),
             Conditional{cond, cond_true, cond_false} => todo!(),
             NewPtr => Ok(Value::Pointer(Expression::NewPtr.eval_to_address(nss)?)),
-            Deref(_) => todo!(),
+
+            Deref(id) => { 
+                let val = id.eval(nss)?;
+                match val {
+                    Value::Pointer(addr) => nss.value_at(&addr),
+                    _ => Err(EvalError::TypeMismatch{expression: self.clone(), expected: Type::Pointer, found: Some(Type::from(&val))})
+                }
+            },
+            
             AmpersAnd(p) => Ok(Value::Pointer(p.eval_to_address(nss)?)),
             _ => todo!()
         }
@@ -73,7 +81,21 @@ impl Instruction {
             }
             Instruction::IfElse { cond, cond_true, cond_false } => todo!(),
             Instruction::While(e, instr) => todo!(),
-            Instruction::WriteAt(e1, e2) => todo!(),
+
+            Instruction::WriteAt(e1, e2) => {
+                match e1 {
+                    Expression::Deref(id) => {
+                        let val = id.eval(nss)?;
+                        match val {
+                            Value::Pointer(addr) => { let r_val = e2.eval(nss)?; nss.write_at(&addr, r_val)?; },
+                            _ => Err(EvalError::TypeMismatch{expression: self.clone(), expected: Type::Pointer, found: Some(Type::from(&val))})
+                        }
+                    }
+                    _ => todo!()
+                }
+                Ok((None, Value::Unit))
+            },
+            
             Instruction::Free(e) => {
                 let id_val = e.eval(nss)?;
                 nss.free(&id_val)?;

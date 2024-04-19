@@ -1,5 +1,7 @@
 use crate::memory::Address;
 use crate::memorycell::MemoryCell;
+use crate::value::Value;
+use crate::error::EvalError;
 
 #[derive(Debug)]
 pub struct Heap(Vec<MemoryCell>);
@@ -23,4 +25,15 @@ impl Heap {
     }
 
     pub fn free(&mut self, a: usize) { self.0[a] = MemoryCell::NotAllocated }
+
+    pub fn get(&self, index: usize) -> Result<Value, EvalError> { 
+        if self.0.len() <= index { return Err(EvalError::NonAllocatedCell(None)) }
+        if !self.0[index].is_allocated() { return Err(EvalError::NonAllocatedCell(None)) }
+        self.0[index].get_value()
+    }
+
+    pub fn set(&mut self, index: usize, value: Value) -> Result<(), EvalError> {
+        if self.0.len() <= index { return Err(EvalError::NonAllocatedCell(None)) }
+        self.0[index].set_value(value)
+    }
 }

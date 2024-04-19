@@ -42,6 +42,26 @@ impl Memory {
 
     pub fn malloc(&mut self) -> Address { self.heap.malloc() }
 
+
+    pub fn value_at(&self, addr: &Address) -> Result<Value, EvalError> { 
+        match addr {
+            Address::HeapAddress(n) => self.heap.get(*n),
+            _ => todo!()
+        }
+    }
+
+    pub fn write_at(&mut self, addr: &Address, v: Value) -> Result<(), EvalError> {
+        match addr {
+            Address::HeapAddress(n) => self.heap.set(*n, v),
+            _ => todo!()
+        }
+    }
+
+
+    pub fn get_heap(&self, index: usize) -> Result<Value, EvalError> { self.heap.get(index) }
+
+    pub fn set_heap(&mut self, index: usize, value: Value) -> Result<(), EvalError> { self.heap.set(index, value) }
+
     pub fn free(&mut self, add: &Value) -> Result<Value, EvalError>{
         match add {
             Value::Pointer(Address::HeapAddress(n)) => {

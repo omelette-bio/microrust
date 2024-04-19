@@ -24,7 +24,6 @@ pub enum EvalError {
     NonAllocatedCell(Option<Expression>),
     NonInitializedValue(Option<Expression>),
     UseAfterFree(Option<Expression>),
-//    MemoryLeak(Address), // enlever ce commentaire une fois Address défini
     MovedValue(Option<Expression>),
     CannotMoveOwnedValue(Option<Expression>),
     CannotFreeOwnedValue(Option<Expression>),
