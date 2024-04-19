@@ -88,8 +88,12 @@ impl Instruction {
                         let val = id.eval(nss)?;
                         match val {
                             Value::Pointer(addr) => { let r_val = e2.eval(nss)?; nss.write_at(&addr, r_val)?; },
-                            _ => Err(EvalError::TypeMismatch{expression: self.clone(), expected: Type::Pointer, found: Some(Type::from(&val))})
+                            _ => todo!()
                         }
+                    }
+                    Expression::Identifier(id) => {
+                        let val = e2.eval(nss)?;
+                        nss.write_var(&id, &val)?;
                     }
                     _ => todo!()
                 }

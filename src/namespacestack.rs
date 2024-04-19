@@ -31,7 +31,7 @@ impl NameSpaceStack {
         Err(EvalError::Undefined(id.clone()))
     }
 
-    pub fn set(&mut self, id: &Identifier, value: Value) -> Result<(), EvalError> {
+    pub fn set(&mut self, id: &Identifier, value: &Value) -> Result<(), EvalError> {
         for ns in self.stack.iter_mut().rev() {
             let res = ns.set(id, value.clone());
             match res {

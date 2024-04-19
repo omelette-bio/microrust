@@ -33,15 +33,8 @@ impl NameSpace {
     /// set the value of a memory cell
     pub fn set(&mut self, id: &Identifier, value: Value) -> Result<(), EvalError> {
         match self.0.get_mut(id) {
-            Some(mc) => {
-                if mc.is_mutable() {
-                    mc.set_value(value).expect("");
-                    Ok(())
-                } else {
-                    Err(EvalError::NotMutable(Some(Expression::Identifier(id.clone()))))
-                }
-            }
-            None => Err(EvalError::Undefined(id.clone())),
+            Some(mc) => mc.set_value(value),
+            None => Err(EvalError::Undefined(id.clone()))
         }
     }
 

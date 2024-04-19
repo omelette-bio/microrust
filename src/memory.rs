@@ -36,6 +36,8 @@ impl Memory {
 
     pub fn declare(&mut self, id: &Identifier, mutable: bool, value: Value) -> Result<(), EvalError> { self.stack.declare(id, mutable, value) }
 
+    pub fn write_var(&mut self, id: &Identifier, value: &Value) -> Result<(), EvalError>{ self.stack.set(id, value) }
+
     pub fn get_address(&self, id: &Identifier) -> Result<Address, EvalError> { self.stack.get_address(id) }
 
     pub fn find(&self, id: &Identifier) -> Result<Value, EvalError> { self.stack.find(id) }
@@ -56,11 +58,6 @@ impl Memory {
             _ => todo!()
         }
     }
-
-
-    pub fn get_heap(&self, index: usize) -> Result<Value, EvalError> { self.heap.get(index) }
-
-    pub fn set_heap(&mut self, index: usize, value: Value) -> Result<(), EvalError> { self.heap.set(index, value) }
 
     pub fn free(&mut self, add: &Value) -> Result<Value, EvalError>{
         match add {
