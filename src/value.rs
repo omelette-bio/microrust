@@ -1,12 +1,15 @@
 use std::fmt;
+use crate::pointer::Pointer;
+use crate::{parsing::parsedvalue::ParsedValue, r#type::Type};
 
 #[derive(Debug, Clone, PartialEq)]
 pub enum Value {
     Integer(isize),
     Boolean(bool),
     Unit,
-    Pointer(Address),
+    Pointer(Pointer),
 }
+
 
 impl fmt::Display for Value {
 
@@ -19,9 +22,6 @@ impl fmt::Display for Value {
         }
     }
 }
-
-use crate::{parsing::parsedvalue::ParsedValue, r#type::Type};
-use crate::memory::Address;
 
 impl From<ParsedValue> for Value {
     fn from(pv: ParsedValue) -> Self {
@@ -44,6 +44,7 @@ impl From<&Value> for Type {
     }
 }
 
+#[allow(unused)]
 impl Value {
     pub fn to_int(&self) -> Result<isize, Type> {
         match self {

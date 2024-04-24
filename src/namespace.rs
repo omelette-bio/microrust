@@ -1,5 +1,5 @@
 use std::collections::HashMap;
-use crate::{error::EvalError, identifier::Identifier, parsing::expression::Expression, value::Value, memorycell::MemoryCell};
+use crate::{error::EvalError, identifier::Identifier, value::Value, memorycell::MemoryCell};
 
 #[derive(Debug)]
 pub struct NameSpace(HashMap<Identifier, MemoryCell>);

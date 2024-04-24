@@ -61,9 +61,14 @@ impl Memory {
 
     pub fn free(&mut self, add: &Value) -> Result<Value, EvalError>{
         match add {
-            Value::Pointer(Address::HeapAddress(n)) => {
-                self.heap.free(*n);
-                Ok(Value::Unit)
+            Value::Pointer(p) => {
+                match &p.get_address() {
+                    Address::HeapAddress(n) => {
+                        self.heap.free(*n);
+                        Ok(Value::Unit)
+                    }
+                    _ => todo!()
+                }
             },
             _ => todo!()
         }

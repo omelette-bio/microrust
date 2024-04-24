@@ -73,6 +73,7 @@ impl Display for Error {
     }
 }
 
+#[allow(unused)]
 impl EvalError {
     pub fn with_expression_info(&self, e: Expression) -> Self {
         use EvalError::*;
