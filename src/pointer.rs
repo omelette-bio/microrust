@@ -1,12 +1,10 @@
 use crate::memory::Address;
-use crate::timestamp::Timestamp;
 use std::fmt;
 
 
 #[derive(Debug, Clone, PartialEq)]
 pub struct Pointer {
   address: Address,
-  timestamp: Timestamp
 }
 
 impl fmt::Display for Pointer {
@@ -17,7 +15,7 @@ impl fmt::Display for Pointer {
 
 impl Pointer {
   pub fn new(add: Address) -> Self {
-    Pointer { address: add, timestamp: Timestamp::generate() }
+    Pointer { address: add }
   }
 
   pub fn get_address(&self) -> &Address {

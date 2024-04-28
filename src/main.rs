@@ -11,7 +11,6 @@ mod r#type;
 mod memorycell;
 mod memory;
 mod heap;
-mod timestamp;
 mod pointer;
 
 

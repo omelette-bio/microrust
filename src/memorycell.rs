@@ -1,6 +1,5 @@
 use crate::error::EvalError;
 use crate::value::Value;
-use crate::timestamp::Timestamp;
 
 #[derive(Debug)]
 pub enum MemoryCell {
@@ -12,7 +11,6 @@ pub enum MemoryCell {
 pub struct AllocatedCell {
     mutable: bool,
     value: Option<Value>,
-    timestamp: Timestamp
 }
 
 #[allow(unused)]
@@ -22,11 +20,11 @@ impl MemoryCell {
     // pub fn new() -> Self { MemoryCell::NotAllocated }
 
     pub fn new_initialized(mutable: bool, value: Value) -> Self {
-        MemoryCell::AllocatedCell( AllocatedCell { mutable, value: Some(value), timestamp: Timestamp::generate() } )
+        MemoryCell::AllocatedCell( AllocatedCell { mutable, value: Some(value) } )
     }
 
     pub fn new_uninitialized() -> Self {
-        MemoryCell::AllocatedCell( AllocatedCell { mutable: true, value: None, timestamp: Timestamp::generate() } )
+        MemoryCell::AllocatedCell( AllocatedCell { mutable: true, value: None } )
     }
 
     pub fn is_mutable(&self) -> bool {
