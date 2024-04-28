@@ -7,6 +7,7 @@ use crate::value::Value;
 use Expression::*;
 use crate::parsing::binop::Binop;
 use crate::error::EvalError;
+use crate::error::EvalError::TypeMismatch;
 use crate::memory::{ Address, Memory };
 use crate::namespace::NameSpace;
 use crate::r#type::Type;
@@ -22,19 +23,106 @@ impl Expression {
             expected: Type::Int, 
             found: Some(Type::from(&v))})
     }
+    fn eval_and_cast_to_bool(&self, mem: &mut Memory) -> Result<bool, EvalError> {
+        let v = self.eval(mem)?;
+        v.to_bool()
+            .map_err(|_| EvalError::TypeMismatch{
+                expression: self.clone(),
+                expected: Type::Bool,
+                found: Some(Type::from(&v))})
+    }
 
     pub fn eval(&self, mem: &mut Memory) -> Result<Value, EvalError> {
         match self {
             Const(v) => Ok(Value::from(*v)),
             Expression::Identifier(id) => Ok(mem.find(id)?),
-            BinOp(e1, Binop::Add, e2) => {
-                let v1 = e1.eval_and_cast_to_int(mem)?;
-                let v2 = e2.eval_and_cast_to_int(mem)?;
+
+            BinOp(lhs, Binop::Add, rhs) => {
+                let v1 = lhs.eval_and_cast_to_int(mem)?;
+                let v2 = rhs.eval_and_cast_to_int(mem)?;
                 Ok(Value::Integer(v1 + v2))
             },
-            BinOp(_,_,_) => todo!(),
-            Conditional{ .. } => todo!(),
-            NewPtr => Ok(Value::Pointer(Pointer::new(Expression::NewPtr.eval_to_address(mem)?))),
+            BinOp(lhs, Binop::Sub, rhs) => {
+                let v1 = lhs.eval_and_cast_to_int(mem)?;
+                let v2 = rhs.eval_and_cast_to_int(mem)?;
+                Ok(Value::Integer(v1 - v2))
+            }
+            BinOp(lhs, Binop::Mul, rhs) => {
+                let v1 = lhs.eval_and_cast_to_int(mem)?;
+                let v2 = rhs.eval_and_cast_to_int(mem)?;
+                Ok(Value::Integer(v1 * v2))
+            }
+            BinOp(lhs, Binop::Div, rhs) => {
+                let v1 = lhs.eval_and_cast_to_int(mem)?;
+                let v2 = rhs.eval_and_cast_to_int(mem)?;
+                if v2 == 0 { return Err(EvalError::DivisionByZero(*rhs.clone())) }
+                Ok(Value::Integer(v1 / v2))
+            }
+            BinOp(lhs, Binop::Mod, rhs) => {
+                let v1 = lhs.eval_and_cast_to_int(mem)?;
+                let v2 = rhs.eval_and_cast_to_int(mem)?;
+                Ok(Value::Integer(v1 % v2))
+            }
+
+            BinOp(lhs, Binop::Eq, rhs) => {
+                let v1 = lhs.eval(mem)?;
+                let v2 = rhs.eval(mem)?;
+                if Type::from(&v1) != Type::from(&v2) { return Err(TypeMismatch {expression: *rhs.clone(), expected: Type::from(&v1), found: Some(Type::from(&v2))}) }
+                match (v1, v2) {
+                    (Value::Boolean(b1), Value::Boolean(b2)) => Ok(Value::Boolean(b1 == b2)),
+                    (Value::Integer(i1), Value::Integer(i2)) => Ok(Value::Boolean(i1 == i2)),
+                    _ => unreachable!()
+                }
+            }
+            BinOp(lhs, Binop::Neq, rhs) => {
+                let v1 = lhs.eval(mem)?;
+                let v2 = rhs.eval(mem)?;
+                if Type::from(&v1) != Type::from(&v2) { return Err(TypeMismatch {expression: *rhs.clone(), expected: Type::from(&v1), found: Some(Type::from(&v2))}) }
+                match (v1, v2) {
+                    (Value::Boolean(b1), Value::Boolean(b2)) => Ok(Value::Boolean(b1 != b2)),
+                    (Value::Integer(i1), Value::Integer(i2)) => Ok(Value::Boolean(i1 != i2)),
+                    _ => unreachable!()
+                }
+            }
+
+
+            BinOp(lhs, Binop::Leq, rhs) => {
+                let v1 = lhs.eval_and_cast_to_int(mem)?;
+                let v2 = rhs.eval_and_cast_to_int(mem)?;
+                Ok(Value::Boolean(v1 <= v2))
+            }
+            BinOp(lhs, Binop::Geq, rhs) => {
+                let v1 = lhs.eval_and_cast_to_int(mem)?;
+                let v2 = rhs.eval_and_cast_to_int(mem)?;
+                Ok(Value::Boolean(v1 >= v2))
+            }
+            BinOp(lhs, Binop::Lt, rhs) => {
+                let v1 = lhs.eval_and_cast_to_int(mem)?;
+                let v2 = rhs.eval_and_cast_to_int(mem)?;
+                Ok(Value::Boolean(v1 < v2))
+            }
+            BinOp(lhs, Binop::Gt, rhs) => {
+                let v1 = lhs.eval_and_cast_to_int(mem)?;
+                let v2 = rhs.eval_and_cast_to_int(mem)?;
+                Ok(Value::Boolean(v1 > v2))
+            }
+            BinOp(lhs, Binop::And, rhs) => {
+                let v1 = lhs.eval_and_cast_to_bool(mem)?;
+                let v2 = rhs.eval_and_cast_to_bool(mem)?;
+                Ok(Value::Boolean(v1 && v2))
+            }
+            BinOp(lhs, Binop::Or, rhs) => {
+                let v1 = lhs.eval_and_cast_to_bool(mem)?;
+                let v2 = rhs.eval_and_cast_to_bool(mem)?;
+                Ok(Value::Boolean(v1 || v2))
+            }
+
+            Conditional{ cond, cond_true, cond_false } => {
+                let res = cond.eval_and_cast_to_bool(mem)?;
+                if res { Ok(cond_true.eval(mem)?) }
+                else { Ok(cond_false.eval(mem)?) }
+            }
+            NewPtr => Ok(Value::Pointer(Pointer::new(NewPtr.eval_to_address(mem)?))),
 
             Deref(id) => { 
                 let val = id.eval(mem)?;
@@ -48,7 +136,7 @@ impl Expression {
                             _ => unreachable!()
                         }
                     },
-                    _ => Err(EvalError::TypeMismatch{expression: self.clone(), expected: Type::Pointer, found: Some(Type::from(&val))})
+                    _ => Err(TypeMismatch{expression: self.clone(), expected: Type::Pointer, found: Some(Type::from(&val))})
                 }
             },
             
@@ -58,15 +146,16 @@ impl Expression {
 
     fn eval_to_address(&self, mem: &mut Memory) -> Result<Address, EvalError> {
         match self {
-            Expression::NewPtr => Ok(mem.malloc()),
+            NewPtr => Ok(mem.malloc()),
             Expression::Identifier(i) => mem.get_address(i),
-            _ => todo!()
+            _ => Err(TypeMismatch {expression: self.clone(), expected: Type::Pointer, found: None})
         }
     }
 }
 
 
 impl Instruction {
+    #[allow(unused)]
     pub fn exec(&self, mem: &mut Memory) -> Result<(Option<Identifier>, Value), EvalError> {
         match self {
             Instruction::Let{id, mutable, expr} => {
@@ -87,8 +176,21 @@ impl Instruction {
                 mem.pop();
                 Ok((None, return_value))
             }
-            Instruction::IfElse { .. } => todo!(),
-            Instruction::While(_, _) => todo!(),
+
+            Instruction::IfElse { cond, cond_true, cond_false } => {
+                let res = cond.eval_and_cast_to_bool(mem)?;
+                if res { cond_true.exec(mem) }
+                else { cond_false.exec(mem) }
+            },
+
+            Instruction::While(cond, inst) => {
+                let mut res = cond.eval_and_cast_to_bool(mem)?;
+                while res {
+                    inst.exec(mem)?;
+                    res = cond.eval_and_cast_to_bool(mem)?;
+                }
+                Ok((None, Value::Unit))
+            },
 
             Instruction::WriteAt(e1, e2) => {
                 let mut res_final: Result<(Option<Identifier>, Value), EvalError> = Ok((None, Value::Unit));
@@ -98,9 +200,9 @@ impl Instruction {
                         match val {
                             Value::Pointer(addr) => { 
                                 let r_val = e2.eval(mem)?; 
-                                let res = mem.write_at(addr.get_address(), r_val);
+                                let res = mem.write_at(addr.get_address(), r_val.clone());
                                 match res {
-                                    Ok(_) => (),
+                                    Ok(_) => res_final = Ok((None, r_val)),
                                     Err(EvalError::NonAllocatedCell(_)) => res_final = Err(EvalError::NonAllocatedCell(Some(e1.clone()))),
                                     Err(EvalError::NotMutable(_)) => res_final = Err(EvalError::NotMutable(Some(e1.clone()))),
                                     _ => unreachable!()
@@ -113,7 +215,7 @@ impl Instruction {
                         let val = e2.eval(mem)?;
                         let res = mem.write_var(&id, &val);
                         match res {
-                            Ok(_) => (),
+                            Ok(_) => res_final = Ok((Some(id.clone()), val.clone())),
                             Err(EvalError::NonAllocatedCell(_)) => res_final = Err(EvalError::NonAllocatedCell(Some(e1.clone()))),
                             Err(EvalError::NotMutable(_)) => res_final = Err(EvalError::NotMutable(Some(e1.clone()))),
                             Err(EvalError::Undefined(id)) => res_final = Err(EvalError::Undefined(id.clone())),

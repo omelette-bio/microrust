@@ -5,12 +5,14 @@ pub enum Binop {
     Mul,
     Div,
     Mod,
+
     Leq,
     Geq,
     Lt,
     Gt,
     Eq,
     Neq,
+
     And,
     Or
 }
