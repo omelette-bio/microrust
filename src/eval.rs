@@ -67,7 +67,7 @@ impl Expression {
             BinOp(lhs, Binop::Eq, rhs) => {
                 let v1 = lhs.eval(mem)?;
                 let v2 = rhs.eval(mem)?;
-                if Type::from(&v1) != Type::from(&v2) { return Err(TypeMismatch {expression: *rhs.clone(), expected: Type::from(&v1), found: Some(Type::from(&v2))}) }
+                if Type::from(&v1) != Type::from(&v2) { return Err(EvalError::TypeMismatch {expression: *rhs.clone(), expected: Type::from(&v1), found: Some(Type::from(&v2))}) }
                 match (v1, v2) {
                     (Value::Boolean(b1), Value::Boolean(b2)) => Ok(Value::Boolean(b1 == b2)),
                     (Value::Integer(i1), Value::Integer(i2)) => Ok(Value::Boolean(i1 == i2)),
@@ -77,7 +77,7 @@ impl Expression {
             BinOp(lhs, Binop::Neq, rhs) => {
                 let v1 = lhs.eval(mem)?;
                 let v2 = rhs.eval(mem)?;
-                if Type::from(&v1) != Type::from(&v2) { return Err(TypeMismatch {expression: *rhs.clone(), expected: Type::from(&v1), found: Some(Type::from(&v2))}) }
+                if Type::from(&v1) != Type::from(&v2) { return Err(EvalError::TypeMismatch {expression: *rhs.clone(), expected: Type::from(&v1), found: Some(Type::from(&v2))}) }
                 match (v1, v2) {
                     (Value::Boolean(b1), Value::Boolean(b2)) => Ok(Value::Boolean(b1 != b2)),
                     (Value::Integer(i1), Value::Integer(i2)) => Ok(Value::Boolean(i1 != i2)),
@@ -136,7 +136,7 @@ impl Expression {
                             _ => unreachable!()
                         }
                     },
-                    _ => Err(TypeMismatch{expression: self.clone(), expected: Type::Pointer, found: Some(Type::from(&val))})
+                    _ => Err(EvalError::TypeMismatch{expression: self.clone(), expected: Type::Pointer, found: Some(Type::from(&val))})
                 }
             },
             
@@ -148,7 +148,7 @@ impl Expression {
         match self {
             NewPtr => Ok(mem.malloc()),
             Expression::Identifier(i) => mem.get_address(i),
-            _ => Err(TypeMismatch {expression: self.clone(), expected: Type::Pointer, found: None})
+            _ => Err(EvalError::TypeMismatch {expression: self.clone(), expected: Type::Pointer, found: None})
         }
     }
 }
@@ -208,7 +208,7 @@ impl Instruction {
                                     _ => unreachable!()
                                 }
                             },
-                            _ => todo!()
+                            _ => res_final = Err(TypeMismatch {expression: *id.clone(), expected: Type::Pointer, found: Some(Type::from(&val))})
                         }
                     }
                     Expression::Identifier(id) => {
@@ -219,19 +219,27 @@ impl Instruction {
                             Err(EvalError::NonAllocatedCell(_)) => res_final = Err(EvalError::NonAllocatedCell(Some(e1.clone()))),
                             Err(EvalError::NotMutable(_)) => res_final = Err(EvalError::NotMutable(Some(e1.clone()))),
                             Err(EvalError::Undefined(id)) => res_final = Err(EvalError::Undefined(id.clone())),
-                            Err(EvalError::TypeMismatch { .. }) => todo!(),
                             _ => unreachable!()
                         }
                     }
-                    _ => todo!()
+                    _ => unreachable!()
                 }
                 res_final
             },
             
             Instruction::Free(e) => {
                 let id_val = e.eval(mem)?;
-                mem.free(&id_val)?;
-                Ok((None, Value::Unit))
+                match mem.free(&id_val) {
+                    Ok(()) => Ok((None, Value::Unit)),
+                    Err( EvalError::TypeMismatch { expression: _, expected, found }) =>
+                        Err( EvalError::TypeMismatch {
+                            expression: e.clone(),
+                            expected,
+                            found
+                        }),
+                    Err(EvalError::CannotFreeOwnedValue(_)) => Err( EvalError::CannotFreeOwnedValue(Some(e.clone()))),
+                    _ => unreachable!()
+                }
             },
         }
     }

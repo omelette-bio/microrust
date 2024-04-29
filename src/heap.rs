@@ -7,6 +7,7 @@ use crate::error::EvalError;
 pub struct Heap(Vec<MemoryCell>);
 
 impl Heap {
+    /// fonction prise du cours
     pub fn new() -> Self { Heap( Vec::new() ) }
 
     /// fonction prise du cours

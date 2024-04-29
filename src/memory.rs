@@ -1,9 +1,14 @@
 use std::fmt::{Display, Formatter};
 use crate::error::EvalError;
+use crate::error::EvalError::{CannotFreeOwnedValue, TypeMismatch};
 use crate::identifier::Identifier;
 use crate::namespacestack::NameSpaceStack;
 use crate::heap::Heap;
 use crate::namespace::NameSpace;
+use crate::parsing::expression::Expression::Const;
+use crate::parsing::parsedvalue::ParsedValue;
+use crate::r#type::Type;
+use crate::r#type::Type::Pointer;
 use crate::value::Value;
 
 #[derive(Debug, Clone, PartialEq)]
@@ -48,29 +53,29 @@ impl Memory {
     pub fn value_at(&self, addr: &Address) -> Result<Value, EvalError> { 
         match addr {
             Address::HeapAddress(n) => self.heap.get(*n),
-            _ => todo!()
+            Address::StackAddress(index, id) => self.stack.find_at(*index, id)
         }
     }
 
     pub fn write_at(&mut self, addr: &Address, v: Value) -> Result<(), EvalError> {
         match addr {
             Address::HeapAddress(n) => self.heap.set(*n, v),
-            _ => todo!()
+            _ => unreachable!()
         }
     }
 
-    pub fn free(&mut self, add: &Value) -> Result<Value, EvalError>{
+    pub fn free(&mut self, add: &Value) -> Result<(), EvalError>{
         match add {
             Value::Pointer(p) => {
                 match &p.get_address() {
                     Address::HeapAddress(n) => {
                         self.heap.free(*n);
-                        Ok(Value::Unit)
+                        Ok(())
                     }
-                    _ => todo!()
+                    _ => Err(CannotFreeOwnedValue(None))
                 }
             },
-            _ => todo!()
+            _ => Err(TypeMismatch { expression: Const(ParsedValue::Integer(0)), expected: Pointer, found: Some(Type::from(add))  })
         }
     }
 }

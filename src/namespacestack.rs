@@ -31,6 +31,10 @@ impl NameSpaceStack {
         Err(EvalError::Undefined(id.clone()))
     }
 
+    pub fn find_at(&self, index: usize, id: &Identifier) -> Result<Value, EvalError> {
+        self.stack[index].find(id)
+    }
+
     pub fn set(&mut self, id: &Identifier, value: &Value) -> Result<(), EvalError> {
         for ns in self.stack.iter_mut().rev() {
             let res = ns.set(id, value.clone());
@@ -45,6 +49,7 @@ impl NameSpaceStack {
         Err(EvalError::Undefined(id.clone()))
     }
 
+    /// fonction prise du cours
     pub fn get_address(&self, id: &Identifier) -> Result<Address, EvalError> {
         // renvoie l'adresse de pile d'un identifiant (cf opérateur `&x`)
 
